@@ -9,6 +9,9 @@ import companyRoutes from "./routes/companyRoutes.js"
 import connectCloudinary from './config/cloudinary.js';
 import jobRoutes from './routes/jobRoute.js'
 
+import {clerkMiddleware} from '@clerk/express'
+
+
 dotenv.config();
 
 const app = express();
@@ -24,6 +27,8 @@ app.use(cors({
 
 // Body parser
 app.use(express.json());
+
+app.use(clerkMiddleware())
 
  await connectCloudinary()
 
