@@ -28,11 +28,29 @@ export  const getJobById = async(req,res) =>{
 
 
         const {id} = req.params
+        
+
+        const job = await Job.findById(id)
+        .populate({
+            path:'companyId',
+            select:'-password'
+        })
+
+        if (!job) {
+
+            return res.json({
+
+                success:false,
+                message:'Job not found'
+            })
+            
+        }
+        res.json({success:true,job})
 
         
         
     } catch (error) {
-        
+        res.json({success:false,message:error.message})
     }
 
 }
