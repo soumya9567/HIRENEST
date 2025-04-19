@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useClerk, UserButton, useUser, useAuth } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppContext } from '../Context/AppContext';
+import portalicon from "../assets/portalicon.png"
 import axios from "axios"
 
 function Navbar() {
@@ -84,7 +85,7 @@ function Navbar() {
   return (
     <div className="bg-orange-500 shadow py-2">
       <div className="container px-4 2xl:px-20 mx-auto flex justify-between items-center">
-        <img onClick={() => navigate('/')} src="/path/to/portalicon.png" width={80} alt="Portal Icon" />
+        <img onClick={() => navigate('/')} src={portalicon} width={80} alt="Portal Icon" />
 
         {user ? (
           <div className="flex items-center gap-4">
