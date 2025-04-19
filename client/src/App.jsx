@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import ApplyJob from './pages/ApplyJob'
@@ -13,11 +13,10 @@ import 'quill/dist/quill.snow.css'
 
 function App() {
   const { showRecruiterLogin } = useContext(AppContext)
+
   return (
-    <div >
-      {
-        showRecruiterLogin && <RecruiterLogin />
-      }
+    <div>
+      {showRecruiterLogin && <RecruiterLogin />} {/* Display recruiter login modal if needed */}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -27,14 +26,7 @@ function App() {
           <Route path="add-job" element={<AddJob />} />
           <Route path="manage-job" element={<ManageJobs />} />
           <Route path="view-applications" element={<ViewApplications />} />
-
-
-
-
         </Route>
-
-
-
       </Routes>
     </div>
   )

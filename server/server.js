@@ -1,31 +1,48 @@
-import dotenv from "dotenv";
-import express from "express";
-import mongoConnect from "./mongooseConnect.js";
-import cors from "cors";
-import authRoute from "./routes/authRoute.js";
-import { clerkWebhooks } from "./controllers/webhooks.js";
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
 
-const app = express();
+import userRoutes from './routes/userRoutes.js';
+import mongoConnect from './mongooseConnect.js';
+import companyRoutes from "./routes/companyRoutes.js"
+import connectCloudinary from './config/cloudinary.js';
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 dotenv.config();
 
-app.use(cors());
+const app = express();
+const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => res.send("API is working"));
-app.post("/webhooks", clerkWebhooks);
+// CORS Setup
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  allowedHeaders: ['Authorization', 'Content-Type'],
+}));
 
-const port = process.env.PORT || 4000;
+// Body parser
+app.use(express.json());
 
+ await connectCloudinary()
+
+// Clerk Auth Middleware
+app.use(ClerkExpressWithAuth());
+
+// API Routes
+app.use('/api/users', userRoutes);
+app.use('/api/company',companyRoutes)
+
+
+
+// MongoDB + Server Start
 mongoConnect()
   .then(() => {
     app.listen(port, () => {
-      console.log(`Server listening on port ${port}`);
+      console.log(`Server is running on ${port}`);
     });
   })
-  .catch(err => {
-    console.error('Failed to connect to MongoDB:', err);
-    process.exit(1); 
+  .catch((err) => {
+    console.error(' MongoDB connection failed:', err);
+    process.exit(1);
   });
-
