@@ -7,6 +7,7 @@ import userRoutes from './routes/userRoutes.js';
 import mongoConnect from './mongooseConnect.js';
 import companyRoutes from "./routes/companyRoutes.js"
 import connectCloudinary from './config/cloudinary.js';
+import jobRoutes from './routes/jobRoute.js'
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(ClerkExpressWithAuth());
 // API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/company',companyRoutes)
+app.use('/api/jobs',jobRoutes)
 
 
 
