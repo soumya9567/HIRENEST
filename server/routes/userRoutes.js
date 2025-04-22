@@ -9,13 +9,13 @@ router.post('/store-user', storeUserData);
 router.get('/user',getUserData)
 
 
-router.get('/apply',applyForJob)
+router.post('/apply',applyForJob)
 
 
 
 router.get('/applications',getUserJobApplications)
 
 
-router.post('update-resume',upload.single('resume'),updateUserResume)
+router.post('/update-resume',upload.single('resume'),updateUserResume)
 
 export default router;

@@ -19,10 +19,10 @@ const port = process.env.PORT || 3000;
 
 // CORS Setup
 app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
-  allowedHeaders: ['Authorization', 'Content-Type'],
+  origin: 'http://localhost:5173', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'token'], 
+  credentials: true
 }));
 
 // Body parser
