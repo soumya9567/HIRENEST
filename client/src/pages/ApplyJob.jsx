@@ -1,34 +1,111 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AppContext } from '../Context/AppContext';
-import { assets } from '../assets/assets';
+import { assets, jobsData } from '../assets/assets';
 import Navbar from '../Components/Navbar';
 import moment from 'moment';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { useAuth } from '@clerk/clerk-react';
 
 function ApplyJob() {
     const { id } = useParams();
+    const { getToken } = useAuth()
+
+    const navigate = useNavigate()// Get the job id from URL params
     const [JobData, setJobData] = useState(null);
-    const { jobs } = useContext(AppContext);
+
+    const [ isAlreadyApplied,setIsAlreadyApplied]  = useState(false)
+    const { jobs, backendUrl, userData, userApplications,fetchUserApplications } = useContext(AppContext);
 
     const fetchJob = async () => {
-        const data = jobs.filter(job => job._id === id);
-        if (data.length !== 0) {
-            setJobData(data[0]);
-            console.log(data[0]);
+
+        try {
+
+            const { data } = await axios.get(backendUrl + `/api/jobs/${id}`)
+
+            if (data.success) {
+                setJobData(data.job)
+            } else {
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+
+            toast.error(error.message)
+
         }
+
+
     };
 
-    useEffect(() => {
-        if (jobs.length > 0) {
-            fetchJob();
+
+    const applyHandler = async () => {
+        try {
+          if (!userData) {
+            return toast.error('Login to apply for job');
+          }
+      
+          if (!userData.resume) {
+            navigate('/applications');
+            return toast.error('Upload resume to apply');
+          }
+      
+          const token = await getToken();
+      
+          const { data } = await axios.post(
+            backendUrl + '/api/users/apply',
+            { jobId: JobData._id },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+      
+          if (data.success) {
+            toast.success(data.message);
+          } else {
+            toast.error(data.message);
+          }
+        } catch (error) {
+          toast.error(error?.response?.data?.message || error.message || 'Something went wrong');
         }
-    }, [id, jobs]);
+      };
+
+
+
+      const checkAlreadyApplied = () => {
+        const hasApplied = userApplications.some(item => item.jobId._id === JobData._id);
+        setIsAlreadyApplied(hasApplied);
+      };
+      
+      useEffect(() => {
+        if (userApplications.length > 0 && JobData) {
+          checkAlreadyApplied();
+        }
+      }, [JobData, userApplications, id]);
+      
+
+    useEffect(() => {
+
+        fetchJob()
+
+    }, [id]);
+
+    useEffect(()=>{
+
+        if (userApplications.length > 0 && JobData) {
+
+            checkAlreadyApplied()
+            
+        }
+    },[JobData,userApplications,id])
 
     return JobData ? (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
             <div className="max-w-5xl mx-auto px-4 py-10">
-                {/* Top Job Card */}
                 <div className="bg-white rounded-2xl shadow-md p-8 flex flex-col md:flex-row gap-8">
                     <div className="flex-shrink-0 flex justify-center items-start">
                         <img
@@ -42,8 +119,8 @@ function ApplyJob() {
                         <h1 className="text-3xl font-bold text-gray-800 mb-4">
                             {JobData.title}
                         </h1>
-
                         <div className="flex flex-wrap gap-4 text-gray-600 text-sm mb-6">
+                            {/* Job Details */}
                             <span className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-lg">
                                 <img src={assets.suitcase_icon} alt="" className="w-4 h-4" />
                                 {JobData.companyId.name}
@@ -63,11 +140,11 @@ function ApplyJob() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition duration-300">
-                                Apply Now
+                            <button onClick={applyHandler} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition duration-300">
+                               {isAlreadyApplied ? 'Already Applied' : 'Apply Now'}
                             </button>
                             <p className="text-gray-500 text-sm">
-                                Posted {moment(JobData.data).fromNow()}
+                                Posted {moment(JobData.date).fromNow()}
                             </p>
                         </div>
                     </div>
@@ -85,8 +162,8 @@ function ApplyJob() {
                     ></div>
 
                     <div className="mt-8 flex justify-start">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition duration-300">
-                            Apply Now
+                        <button onClick={applyHandler} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition duration-300">
+                        {isAlreadyApplied ? 'Already Applied' : 'Apply Now'}
                         </button>
                     </div>
                 </div>
@@ -97,6 +174,7 @@ function ApplyJob() {
             <p className="text-gray-500">Loading job details...</p>
         </div>
     );
+
 }
 
 export default ApplyJob;
