@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt'
 import {v2 as cloudinary} from 'cloudinary'
 import generateToken from "../utils/generateToken.js";
 import Job from "../models/Job.js";
+import JobApplication from "../models/jobApplication.js";
+import User from "../models/User.js";
 
 
 
@@ -82,7 +84,7 @@ export const loginCompany = async (req,res) =>{
         const company = await Company.findOne({email})
 
 
-        if (bcrypt.compare(password,company.password)) {
+        if (await bcrypt.compare(password,company.password)) {
 
             res.json({
                 success:true,
@@ -137,7 +139,7 @@ export const postJob = async (req,res) =>{
     const {title,description,location,salary,level,category} =req.body
 
     const companyId = req.company._id
-    console.log(companyId,{title,description,location,salary})
+    // console.log(companyId,{title,description,location,salary})
 
     try {
         const newJob = new Job({
@@ -171,12 +173,28 @@ export const postJob = async (req,res) =>{
 
 }
 
-export const getCompanyJobApplicants = async (req,res) =>{
-
-
-    
-}
-
+export const getCompanyJobApplicants = async (req, res) => {
+    try {
+      const companyId = req.company._id;
+  
+      // Step 1: Get all applications
+      const applications = await JobApplication.find({ companyId })
+        .populate('jobId', 'title location category level salary')
+        .lean(); // Convert Mongoose docs to plain JS objects
+  
+      // Step 2: Manually add user details
+      for (let app of applications) {
+        const user = await User.findOne({ clerkId: app.userId }, 'name image resume').lean();
+        app.user = user || null;
+      }
+  
+      return res.json({ success: true, applications });
+  
+    } catch (error) {
+      return res.json({ success: false, message: error.message });
+    }
+  };
+  
  export const getCompanyPostedJobs = async (req,res) =>{
 
 
@@ -189,7 +207,15 @@ export const getCompanyJobApplicants = async (req,res) =>{
 
         const jobs = await Job.find({companyId})
 
-        res.json({success:true,jobsData:jobs})
+        const jobsData = await Promise.all(jobs.map(async (job)=>{
+            
+             const applicants = await JobApplication.find({jobId:job._id})
+             
+
+             return{...job.toObject(),applicants:applicants.length}
+        }))
+
+        res.json({success:true,jobsData})
 
 
         
@@ -206,8 +232,21 @@ export const getCompanyJobApplicants = async (req,res) =>{
 
 export const ChangeJobApplicantionsStatus = async (req,res) =>{
 
+try {
 
     
+    const {id,status}  = req.body
+
+    await JobApplication.findOneAndUpdate({_id: id},{status})
+
+    res.json({success:true,message:'Status changed'})
+
+    
+    
+} catch (error) {
+    res.json({success:false,message:error.message})
+    
+}
 }
 
 
