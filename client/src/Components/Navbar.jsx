@@ -11,7 +11,7 @@ function Navbar() {
   const { user } = useUser();  
   const { getToken } = useAuth();  
   const navigate = useNavigate();
-  const { setShowRecruiterLogin } = useContext(AppContext);
+  const { setShowRecruiterLogin,backendUrl } = useContext(AppContext);
   const[role,setRole]=useState("")
 
   useEffect(() => {
@@ -53,19 +53,19 @@ function Navbar() {
             clerkId: user.id,
             email: user.primaryEmailAddress.emailAddress,
              name: `${user.firstName} ${user.lastName}`,
-             resume: user.resume,
             image: user.imageUrl,
           }
         };
         console.log('Sending this data to backend:', requestData);
   
       const response = await axios.post(
-        'http://localhost:3000/api/users/store-user',
+        backendUrl + '/api/users/store-user',
         {
           clerkId: user.id,
           name: `${user.firstName} ${user.lastName}`,
           email: user.primaryEmailAddress.emailAddress,
           image: user.imageUrl,
+
           role: role,        },
         {
           headers: {
@@ -109,18 +109,10 @@ function Navbar() {
               }} 
               className="bg-blue-600 text-white px-4 sm:px-6 py-1 rounded-full text-sm hover:bg-blue-700"
             >
-              CLogin
+              Login
             </button>
 
-            <button
-               onClick={()=>{
-                handleLogin()
-                setRole("recruiter")
-              }} 
-              className="bg-blue-600 text-white px-4 sm:px-6 py-1 rounded-full text-sm hover:bg-blue-700"
-            >
-              RLogin
-            </button>
+           
           </div>
         )}
       </div>
