@@ -17,7 +17,6 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS Setup
 app.use(cors({
   origin: 'http://localhost:5173', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -25,24 +24,20 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parser
 app.use(express.json());
 
 app.use(clerkMiddleware())
 
  await connectCloudinary()
 
-// Clerk Auth Middleware
 app.use(ClerkExpressWithAuth());
 
-// API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/company',companyRoutes)
 app.use('/api/jobs',jobRoutes)
 
 
 
-// MongoDB + Server Start
 mongoConnect()
   .then(() => {
     app.listen(port, () => {

@@ -6,46 +6,37 @@ import { v2 as cloudinary } from "cloudinary"
 
  export const storeUserData = async (req, res) => {
   try {
-    // Destructuring the required fields from the request body
     const { clerkId, name, email, image, role,resume } = req.body;
 
-    // Input validation - check if required fields are provided
     if (!clerkId || !email || !name) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Check if user already exists by clerkId and email (assuming email should be unique as well)
     const existingUser = await User.findOne({ $or: [{ clerkId }, { email }] });
 
     if (existingUser) {
       return res.status(409).json({ message: 'User already exists', user: existingUser });
     }
 
-    // Create new user with default role if not provided
     const newUser = new User({
       clerkId,
       name,
       email,
       image,
       resume,
-      role: role || 'candidate', // Fallback to 'candidate' role
+      role: role || 'candidate', 
     });
 
-    // Save the new user to the database
     const savedUser = await newUser.save();
 
-    // Respond with the saved user, excluding sensitive data (like password)
     const { password, ...userWithoutPassword } = savedUser.toObject();
     
     res.status(201).json({ message: 'User registered successfully', user: userWithoutPassword });
 
   } catch (error) {
-    // Log error for debugging purposes
     console.error('Error storing user:', error);
 
-    // Send an appropriate error response
     if (error.code === 11000) {
-      // MongoDB duplicate key error code, handle gracefully
       return res.status(400).json({ error: 'Duplicate entry found for this field' });
     }
 
@@ -57,22 +48,19 @@ import { v2 as cloudinary } from "cloudinary"
 
 export const getUserData = async (req, res) => {
   try {
-    // Get clerkId from query params
-    const { clerkId } = req.query; // Use req.query to get the clerkId from the query parameters
+    const { clerkId } = req.query; 
 
     if (!clerkId) {
       return res.status(400).json({ success: false, message: 'clerkId is required' });
     }
 
-    // Find the user by clerkId
     const user = await User.findOne({ clerkId });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // If user is found, send the user data, omitting sensitive information like password
-    const { password, ...userWithoutPassword } = user.toObject(); // Exclude password from response
+    const { password, ...userWithoutPassword } = user.toObject(); 
     res.json({ success: true, user: userWithoutPassword });
 
   } catch (error) {
@@ -102,7 +90,7 @@ export const applyForJob = async (req, res) => {
     }
 
     await JobApplication.create({
-      companyId: jobData.companyId, // Use jobData.companyId, not jobData itself
+      companyId: jobData.companyId, 
       userId,
       jobId,
       date: Date.now(),

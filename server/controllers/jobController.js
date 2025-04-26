@@ -20,16 +20,12 @@ export const getJobs = async(req,res) =>{
 
 }
 
-//get job by single id
 
 export const getJobById = async (req, res) => {
     try {
-        // Extract _id from req.params
         const {id } = req.params;
-        console.log(id);  // Check if _id is coming from the URL
-
-        // Use _id correctly in the findById method
-        const job = await Job.findById(id)  // Change `id` to `_id`
+        console.log(id); 
+        const job = await Job.findById(id)  
             .populate({
                 path: 'companyId',
                 select: '-password'

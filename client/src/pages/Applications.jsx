@@ -9,62 +9,44 @@ import { toast } from 'react-toastify';
 
 function Applications() {
 
-    const {user} = useUser()
-
-    const {getToken} = useAuth()
+    const { user } = useUser()
+    const { getToken } = useAuth()
     const [isEdit, setIsEdit] = useState(false);
     const [resume, setResume] = useState(null);
 
+    const { backendUrl, userData, userApplications, fetchUserData, fetchUserApplications } = useContext(AppContext)
 
-    const {backendUrl,userData,userApplications,fetchUserData,fetchUserApplications}  = useContext(AppContext)
-
-
-    const updateResume = async () =>{
-
+    const updateResume = async () => {
         try {
-            
-         const formData = new FormData()
+            const formData = new FormData()
+            formData.append('resume', resume)
 
-         formData.append('resume',resume)
+            const token = await getToken()
 
+            const { data } = await axios.post(backendUrl + '/api/users/update-resume',
+                formData, { headers: { Authorization: `Bearer ${token}` } }
+            )
 
-         const token = await getToken()
-
-         const {data} = await axios.post(backendUrl + '/api/users/update-resume',
-            formData,{headers:{Authorization:`Bearer ${token}`}}
-         )
-
-         if (data.success) {
-            
-
-            toast.success(data.message)
-            await fetchUserData()
-         }else{
-            toast.error(data.message)
-
-
-         }
+            if (data.success) {
+                toast.success(data.message)
+                await fetchUserData()
+            } else {
+                toast.error(data.message)
+            }
 
         } catch (error) {
-
             toast.error(error.message)
-            
         }
 
         setIsEdit(false)
         setResume(null)
-
     }
 
-    useEffect(()=>{
-
+    useEffect(() => {
         if (user) {
-
             fetchUserApplications()
-            
         }
-
-    },[user])
+    }, [user])
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -74,8 +56,8 @@ function Applications() {
 
                 <div className='flex gap-2 mb-6 mt-3'>
                     {
-                        isEdit || userData && userData.resume === ""
-                        ? 
+                        isEdit || (userData && userData.resume === "")
+                            ?
                             <>
                                 <label className='flex items-center' htmlFor="resumeUpload">
 
@@ -87,14 +69,15 @@ function Applications() {
                                 <button onClick={updateResume} className='bg-green-100 border border-green-400 rounded-lg px-4 py-2'>Save</button>
 
                             </>
-                            : <div className='flex gap-2'>
-                                <a href="" className='bg-blue-100 text-blue-600 px-4 py-2 rounded-lg'>
-                                    Resume
+                            : userData && userData.resume && (
+                                <div className='flex gap-2'>
+                                    <a href={userData.resume} className='bg-blue-100 text-blue-600 px-4 py-2 rounded-lg'>
+                                        Resume
+                                    </a>
 
-                                </a>
-
-                                <button onClick={() => { setIsEdit(true) }} className='text-gray-500 border border-gray-300 rounded-lg  px-4 py-2'>Edit</button>
-                            </div>
+                                    <button onClick={() => { setIsEdit(true) }} className='text-gray-500 border border-gray-300 rounded-lg  px-4 py-2'>Edit</button>
+                                </div>
+                            )
                     }
                 </div>
                 <h2 className='text-xl font-semibold mb-4'>
@@ -111,7 +94,7 @@ function Applications() {
                         </tr>
                     </thead>
                     <tbody>
-                        {userApplications.map((job, index) =>
+                        {userApplications.map((job, index) => (
                             true ? (
                                 <tr key={index}>
                                     <td className='py-3 px-4 flex items-center gap-2 border-b'>
@@ -124,25 +107,21 @@ function Applications() {
                                     <td className='py-2 px-4 border-b'>
                                         <span
                                             className={`${job.status === 'Accepted'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : job.status === 'Rejected'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-blue-100 text-blue-800'
-                                                } px-4 py-1.5 rounded font-medium`}
+                                                ? 'bg-green-100 text-green-800'
+                                                : job.status === 'Rejected'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-blue-100 text-blue-800'
+                                            } px-4 py-1.5 rounded font-medium`}
                                         >
                                             {job.status}
                                         </span>
                                     </td>
                                 </tr>
                             ) : null
-                        )}
+                        ))}
                     </tbody>
-
                 </table>
-
-
             </div>
-
         </div>
     );
 }

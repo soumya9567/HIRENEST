@@ -31,7 +31,7 @@ function JobListing() {
 
         const matchTitle = job => searchFilter.title === "" || job.title.toLowerCase().includes(searchFilter.title.toLowerCase())
 
-        const matchSearchLocation = job =>searchFilter.location == "" || job.location.toLowerCase().includes(searchFilter.title.toLowerCase())
+        const matchSearchLocation = job =>searchFilter.location == "" || job.location.toLowerCase().includes(searchFilter.location.toLowerCase())
 
         const newFilteredJobs = jobs.slice().reverse().filter(
 
